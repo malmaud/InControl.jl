@@ -8,14 +8,17 @@ shortcircuit{T}(::Type{T}) = method_exists(convert, (Type{Predicate}, T))
 
 handle_if(pred, cons) = handle_if(pred, cons, nothing)
 
+function handle_while end
+
 abstract Predicate
 
 Base.convert(::Type{Predicate}, x::Bool) = x
 
 function custom_if(pred, cons, alt=:nothing)
   quote
-    if shortcircuit(typeof($pred))
-      if convert(Predicate, $pred)
+    val = $pred
+    if shortcircuit(typeof(val))
+      if convert(Predicate, val)
         $cons
       else
         $alt
@@ -28,9 +31,13 @@ end
 
 function custom_while(pred, body)
   quote
-    if shortcircuit(typeof($pred))
-      while convert(Predicate, $pred)
-        $body
+    val = $pred
+    if shortcircuit(typeof(val))
+      if convert(Predicate, val)
+        $body  # TODO: scoping is wrong
+        while convert(Predicate, $pred)
+          $body
+        end
       end
     else
       handle_while($pred, $body)
@@ -68,7 +75,7 @@ function _control(expr)
     is_func = @capture expr begin
       f_(args__) = body_
     end
-    is_func || error("Expected fucntion")
+    is_func || error("Expected function")
   end
   quote
     function $(esc(f))($(args...))
