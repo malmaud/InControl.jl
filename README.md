@@ -49,7 +49,7 @@ end
 IfTrace(:my_test, 1, -1)
 ```
 
-`while` loops are also customizable via `handle_white(predicate, body)`.
+`while` loops are also customizable via `handle_while(predicate, loop_body)`.
 
 Examples
 -----
